@@ -133,6 +133,20 @@ tr.rec td{background:var(--teal-wash)}
 tr.rec td.pick{font-weight:700;color:var(--teal)}
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 
+/* ── 계정 대장 ── */
+.cred{border:1px solid var(--rule-soft);border-radius:6px;padding:2px 14px 8px;margin:14px 0;background:var(--paper)}
+.cred h4{margin:12px 0 2px;font-size:14px;font-weight:800;letter-spacing:-.01em;
+  padding-bottom:6px;border-bottom:1px solid var(--rule)}
+.cred h4 span{font-weight:500;font-size:12px;color:var(--ink-soft);margin-left:7px}
+.cred .field{padding:7px 0}
+.cred .field:last-child{border-bottom:none}
+.cred input.pw{font-family:var(--mono);font-size:13px}
+.cred.filled-any h4{color:var(--teal)}
+.credbar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px}
+.credbar .danger{margin-left:auto;color:#9B2C2C;border-color:#E5C7C7}
+.credbar .danger:hover{border-color:#9B2C2C;color:#9B2C2C}
+@media (max-width:560px){.credbar .danger{margin-left:0}}
+
 /* ── notes ── */
 .notes{margin:16px 0 4px}
 .notes-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);
@@ -185,6 +199,11 @@ footer b{color:var(--ink)}
   ul.check li.done .txt{text-decoration:none;color:#000}
   .field input{border-bottom:1px solid #999}
   textarea{min-height:64px}
+  .credbar{display:none!important}
+  .cred{page-break-inside:avoid;border:1px solid #999}
+  body.printcred .pad>section:not(#s11){display:none!important}
+  body.printcred header.hero .facts{display:none}
+  body.printcred header.hero h1{font-size:20pt}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
@@ -210,6 +229,7 @@ footer b{color:var(--ink)}
       <a href="#s8"><span class="dot"></span>08 검증</a>
       <a href="#s9"><span class="dot"></span>09 운영 준비</a>
       <a href="#s10"><span class="dot"></span>10 잔여</a>
+      <a href="#s11"><span class="dot"></span>11 계정 대장</a>
     </nav>
   </div>
 </div>
@@ -375,7 +395,7 @@ footer b{color:var(--ink)}
   <h3>비밀번호</h3>
   <div class="alert">
     <p><strong>운영 대행을 위해 저희도 비밀번호를 알아야 합니다.</strong> 매일 콘텐츠를 올리고 문의에 답해야 하므로 접근 권한이 필요합니다. 다만 <b>메신저·메일로 주고받지 않고</b> 비밀번호 관리 도구의 공유 보관함에 넣어, 병원과 운영 담당자만 열람하도록 합니다.</p>
-    <p><strong>이 페이지에는 실제 비밀번호를 적지 마세요.</strong> 아래 패턴은 규칙 설명용입니다. 네 자리 숫자는 원장님이 정해 주시고, 확정 후에는 관리 도구로 옮긴 뒤 이 칸을 비웁니다.</p>
+    <p><strong>아래 패턴은 규칙 설명용입니다.</strong> 네 자리 숫자는 원장님이 정해 주시고, 실제 확정값은 <b>11번 계정 대장</b>에 기록한 뒤 문서로 내려받아 관리 도구로 옮깁니다.</p>
   </div>
   <div class="tbl-wrap"><table>
     <tr><th style="width:46%">패턴</th><th>설명</th></tr>
@@ -614,11 +634,36 @@ footer b{color:var(--ink)}
   <div class="field"><label>완료 보고일</label><input data-k="report" placeholder=""></div>
 </section>
 
+<section id="s11">
+  <div class="sec-head"><span class="num">11</span><h2>계정 대장 — 아이디 · 비밀번호</h2><span class="sec-count"></span></div>
+  <p class="sec-note">개설한 계정의 아이디와 비밀번호를 여기에 정리합니다. 작성 후 <b>문서로 내려받아</b> 원장님께 전달하고, 상시 보관은 비밀번호 관리 도구로 옮깁니다.</p>
+
+  <div class="alert">
+    <p><strong>입력값은 이 기기의 브라우저에만 저장됩니다.</strong> 서버로 전송되지는 않지만, 반대로 이 컴퓨터를 쓰는 사람은 누구나 볼 수 있습니다. 공용 PC나 병원 데스크 PC에서 작업했다면 끝난 뒤 반드시 <b>대장 비우기</b>를 누르세요.</p>
+    <p><strong>내려받은 문서에는 암호가 걸려 있지 않습니다.</strong> 전달을 마치면 파일을 삭제하고, 상시 보관은 Bitwarden 등 관리 도구의 공유 보관함에서 하세요. 카카오톡·메일로 이 파일을 그대로 보내지 마세요.</p>
+  </div>
+
+  <div id="credwrap"></div>
+
+  <div class="credbar">
+    <button id="pwbtn" onclick="togglePw()">비밀번호 표시</button>
+    <button class="primary" onclick="dlCredTxt()">문서로 저장 (.txt)</button>
+    <button onclick="dlCredCsv()">엑셀용 저장 (.csv)</button>
+    <button onclick="copyCred()">복사</button>
+    <button onclick="printCred()">대장만 인쇄 / PDF</button>
+    <button class="danger" onclick="clearCred()">대장 비우기</button>
+  </div>
+  <p style="font-size:12.5px;color:var(--ink-faint);margin:12px 0 0">
+    저장되는 문서에는 <b>대외비</b> 표기, 병원명, 작성 일시, 작성자가 함께 기록됩니다.
+    비밀번호를 아직 정하지 않았다면 03번의 패턴을 참고하세요.
+  </p>
+</section>
+
 </div>
 
 <footer>
-  모든 계정은 <b>병원 명의</b>로 개설하고 운영만 대행합니다. 계정 비밀번호는 이 페이지에 남기지 말고 비밀번호 관리 도구의 공유 보관함에서 관리하세요.<br>
-  입력한 내용은 <b>이 기기 브라우저에만</b> 저장됩니다. 서버로 전송되지 않으므로 다른 기기에서는 보이지 않습니다.<br>
+  모든 계정은 <b>병원 명의</b>로 개설하고 운영만 대행합니다. 아이디·비밀번호는 11번 계정 대장에 정리해 문서로 내려받고, 상시 보관은 비밀번호 관리 도구의 공유 보관함에서 하세요.<br>
+  입력한 내용은 <b>이 기기 브라우저에만</b> 저장됩니다. 서버로 전송되지 않지만 같은 기기를 쓰는 사람은 볼 수 있으니, 공용 PC에서는 작업 후 대장을 비우세요.<br>
   의료광고 관련 내용은 실무 참고용이며, 실제 집행 전 병원 측과 심의 절차를 확인하시기 바랍니다.
 </footer>
 </div>
@@ -643,6 +688,39 @@ footer b{color:var(--ink)}
 <script>
 (function(){
   const KEY='miraecell-channel-checklist-v3';
+
+  /* ── 계정 대장: 입력 행 생성 (fields 수집 전에 실행) ── */
+  const ACCOUNTS=[
+    {k:'google',n:'구글 계정',      d:'유튜브 · 구글 비즈니스 프로필', idp:'mdmiraecell@gmail.com'},
+    {k:'naver', n:'네이버 계정',    d:'스마트플레이스 · 톡톡 · 예약 · 블로그', idp:'mdmiraecell'},
+    {k:'kakao', n:'카카오 계정',    d:'카카오맵 · 카카오톡 채널', idp:'가입 이메일'},
+    {k:'meta',  n:'Meta 비즈니스',  d:'페이스북 페이지 · 인스타그램 관리', idp:'로그인 이메일'},
+    {k:'insta', n:'인스타그램',     d:'비즈니스 계정 직접 로그인', idp:'@mdmiraecell'},
+    {k:'apple', n:'Apple ID',      d:'애플지도 (선택)', idp:'Apple ID 이메일'},
+    {k:'vault', n:'비밀번호 관리 도구', d:'Bitwarden 등 공유 보관함', idp:'조직 계정 이메일'},
+    {k:'etc1',  n:'기타 계정 1',    d:'', idp:''},
+    {k:'etc2',  n:'기타 계정 2',    d:'', idp:''}
+  ];
+  const CREDF=[
+    {s:'id',  t:'아이디 · 이메일'},
+    {s:'pw',  t:'비밀번호', pw:true, ph:'03번 패턴 참고'},
+    {s:'otp', t:'2단계 인증', ph:'등록한 휴대폰 번호 / 인증 앱'},
+    {s:'rec', t:'복구 수단', ph:'복구 이메일 · 복구 전화'},
+    {s:'memo',t:'메모', ph:'관리자 권한 보유자, 개설일 등'}
+  ];
+  const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const credHost=document.getElementById('credwrap');
+  if(credHost){
+    credHost.innerHTML=ACCOUNTS.map(a=>
+      '<div class="cred" data-acc="'+a.k+'">'+
+      '<h4>'+esc(a.n)+(a.d?' <span>'+esc(a.d)+'</span>':'')+'</h4>'+
+      CREDF.map(f=>'<div class="field"><label>'+esc(f.t)+'</label>'+
+        '<input data-k="c_'+a.k+'_'+f.s+'" autocomplete="off" spellcheck="false"'+
+        (f.pw?' type="password" class="pw"':'')+
+        ' placeholder="'+esc(f.s==='id'?a.idp:(f.ph||''))+'"></div>').join('')+
+      '</div>').join('');
+  }
+
   const boxes=[...document.querySelectorAll('ul.check input[type=checkbox]')];
   const fields=[...document.querySelectorAll('[data-k]')];
   const secs=[...document.querySelectorAll('section')];
@@ -702,13 +780,14 @@ footer b{color:var(--ink)}
           const f=el.closest('.field'); if(f)f.classList.add('filled');}
       });
     }catch(e){} }
-    paint();
+    paint(); markCred();
   }
 
   boxes.forEach(b=>b.addEventListener('change',()=>{paint();queue()}));
   fields.forEach(el=>{
     el.addEventListener('input',()=>{
       const f=el.closest('.field'); if(f)f.classList.toggle('filled',!!el.value);
+      if(el.closest('#credwrap'))markCred();
       queue();
     });
   });
@@ -728,6 +807,107 @@ footer b{color:var(--ink)}
 
   /* ── report ── */
   const v=k=>{const el=document.querySelector('[data-k='+k+']');return el&&el.value?el.value:'—'};
+
+  /* ── 계정 대장: 문서 저장 ── */
+  const cval=k=>{const el=document.querySelector('[data-k="'+k+'"]');return el?el.value.trim():''};
+  const pad2=n=>String(n).padStart(2,'0');
+  function now(){const d=new Date();return{
+    file:''+d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate()),
+    full:d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())}}
+  const hospital=()=>cval('name')||'명동미래셀의원';
+
+  function credDoc(){
+    const t=now(), L=[];
+    L.push('※ 대외비 — 취급 주의');
+    L.push('');
+    L.push(hospital()+' 계정 관리 대장');
+    L.push('작성 '+t.full+'   작성자 '+(cval('worker')||'—'));
+    L.push('='.repeat(52));
+    ACCOUNTS.forEach(a=>{
+      L.push('');
+      L.push('['+a.n+']'+(a.d?'  '+a.d:''));
+      CREDF.forEach(f=>L.push('  '+f.t+' : '+(cval('c_'+a.k+'_'+f.s)||'—')));
+    });
+    L.push('');
+    L.push('-'.repeat(52));
+    L.push('[채널 표시명]');
+    [['유튜브 채널명','ytname'],['유튜브 핸들','handle'],['블로그명','blogname'],
+     ['블로그 주소','nid'],['인스타그램 핸들','igname'],['카카오톡 채널','kchname'],
+     ['카카오톡 채널 ID','kchid'],['인증용 휴대폰','phone']].forEach(r=>{
+      L.push('  '+r[0]+' : '+(cval(r[1])||'—'));
+    });
+    L.push('');
+    L.push('-'.repeat(52));
+    L.push('· 모든 계정은 '+hospital()+' 명의로 개설되었으며 소유권은 병원에 있습니다.');
+    L.push('· 이 문서는 암호화되어 있지 않습니다. 전달 후 파일을 삭제하고');
+    L.push('  상시 보관은 비밀번호 관리 도구의 공유 보관함에서 하세요.');
+    L.push('· 메신저·이메일로 이 파일을 그대로 전송하지 마세요.');
+    return L.join('\n');
+  }
+
+  function credCsv(){
+    const q=x=>'"'+String(x||'').replace(/"/g,'""')+'"';
+    const rows=[['계정','설명'].concat(CREDF.map(f=>f.t)).map(q).join(',')];
+    ACCOUNTS.forEach(a=>{
+      rows.push([a.n,a.d].concat(CREDF.map(f=>cval('c_'+a.k+'_'+f.s))).map(q).join(','));
+    });
+    return rows.join('\r\n');
+  }
+
+  function download(name,text,mime){
+    try{
+      const blob=new Blob(['\ufeff'+text],{type:mime+';charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
+      status.textContent=name+' 저장됨 — 전달 후 파일을 삭제하세요';
+    }catch(e){ status.textContent='저장 실패 — 복사 버튼을 사용하세요'; }
+  }
+
+  /* 파일명은 ASCII로 — 일부 브라우저가 한글 파일명을 버리고 확장자 없는 download 로 저장합니다 */
+  const fname=ext=>'mdmiraecell-accounts-'+now().file+'.'+ext;
+  window.dlCredTxt=()=>download(fname('txt'),credDoc(),'text/plain');
+  window.dlCredCsv=()=>download(fname('csv'),credCsv(),'text/csv');
+
+  window.copyCred=function(){
+    const ta=document.createElement('textarea');
+    ta.value=credDoc(); ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,99999);
+    try{ document.execCommand('copy'); status.textContent='계정 대장을 복사했습니다 — 붙여넣기 후 클립보드를 비우세요'; }
+    catch(e){ status.textContent='복사 실패 — 문서로 저장을 사용하세요'; }
+    ta.remove();
+  };
+
+  const pws=()=>[...document.querySelectorAll('#credwrap input.pw')];
+  function showPw(on){
+    pws().forEach(el=>el.type=on?'text':'password');
+    const b=document.getElementById('pwbtn');
+    if(b)b.textContent=on?'비밀번호 숨기기':'비밀번호 표시';
+  }
+  window.togglePw=()=>showPw(pws().some(el=>el.type==='password'));
+
+  window.printCred=function(){
+    showPw(true);
+    document.body.classList.add('printcred');
+    window.print();
+    setTimeout(()=>document.body.classList.remove('printcred'),500);
+  };
+
+  window.clearCred=function(){
+    if(!confirm('계정 대장에 입력한 아이디·비밀번호를 모두 지웁니다. 문서로 저장하셨나요?'))return;
+    [...document.querySelectorAll('#credwrap input')].forEach(el=>{
+      el.value=''; const f=el.closest('.field'); if(f)f.classList.remove('filled');
+    });
+    showPw(false); markCred(); save();
+    status.textContent='계정 대장을 비웠습니다';
+  };
+
+  function markCred(){
+    [...document.querySelectorAll('.cred')].forEach(c=>{
+      c.classList.toggle('filled-any',[...c.querySelectorAll('input')].some(i=>i.value));
+    });
+  }
   window.openReport=function(){
     const L=[];
     L.push('명동 미래셀 · 채널 개설 작업 보고');
@@ -792,6 +972,7 @@ footer b{color:var(--ink)}
     fields.forEach(el=>{el.value='';const f=el.closest('.field');if(f)f.classList.remove('filled')});
     document.querySelector('[data-k=tel]').value='0507-1327-8768';
     document.querySelector('[data-k=site]').value='http://mdmiraecell.com';
+    showPw(false); markCred();
     paint(); save();
   };
 
